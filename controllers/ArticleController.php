@@ -32,7 +32,6 @@ class ArticleController extends Controller {
                         'roles' => ['@']
                     ]
                 ]
-
             ],
             'verbs' => [
                 'class' => VerbFilter::className(),
@@ -96,6 +95,12 @@ class ArticleController extends Controller {
     public function actionUpdate($slug) {
         $model = $this->findModel($slug);
 
+//        if($model->created_by !== $model->createdBy->id){
+        if ($model->created_by !== Yii::$app->user->id) {
+
+            throw new \yii\web\ForbiddenHttpException("you are not allow to do this operation");
+        }
+
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
             return $this->redirect(['view', 'slug' => $model->slug]);
         }
@@ -113,7 +118,14 @@ class ArticleController extends Controller {
      * @throws NotFoundHttpException if the model cannot be found
      */
     public function actionDelete($slug) {
-        $this->findModel($slug)->delete();
+        
+        $model = $this->findModel($slug);
+        
+        if ($model->created_by !== Yii::$app->user->id) {
+            throw new \yii\web\ForbiddenHttpException("you are not allow to do this operation");
+        }
+        
+        $model->delete();
 
         return $this->redirect(['index']);
     }
